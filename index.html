@@ -4,110 +4,200 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>София, с днём рождения! 💌</title>
-<link href="https://fonts.googleapis.com/css2?family=Marck+Script&family=Nunito:wght@600;800&display=swap&subset=cyrillic" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap&subset=cyrillic" rel="stylesheet">
 <style>
 :root{
-  --bg1:#ffe4ee; --bg2:#ffd0e3; --env:#ffb3cf; --env-front:#ff9ec1; --flap:#ff8fb8;
-  --card:#fffafc; --ink:#b0215a; --soft:#d96a99; --qr:#c2185b;
+  --bg1:#fff0f5; --bg2:#ffd9e8; --bg3:#f3d9ff;
+  --env-a:#ffc2d9; --env-b:#ff9fc2; --liner-a:#ffe3ee; --liner-b:#ffc9de;
+  --ink:#a3224f; --soft:#d46c98; --card-a:#fffdfb; --card-b:#fff1f6; --line:#f4a8c6;
+  --text-on-bg:#a3224f;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg1:#3a1626; --bg2:#2a0f1c; --env:#d9779f; --env-front:#c8658d; --flap:#bd5c84;
-    --card:#fff1f6; --ink:#a01c50; --soft:#c25583; --qr:#a01c50;
+    --bg1:#3b1830; --bg2:#2a1024; --bg3:#2b1740; --text-on-bg:#ffd3e4; --soft:#e48db3;
   }
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{
-  background:radial-gradient(circle at 30% 20%,var(--bg1),var(--bg2));
-  font-family:'Nunito',system-ui,sans-serif; color:var(--ink);
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
-  overflow:hidden; padding:0 16px 48px;
+  background:
+    radial-gradient(60vmax 60vmax at 15% 10%, var(--bg3), transparent 60%),
+    radial-gradient(50vmax 50vmax at 90% 85%, var(--bg2), transparent 60%),
+    linear-gradient(160deg,var(--bg1),var(--bg2));
+  font-family:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color:var(--text-on-bg); overflow:hidden; position:relative;
 }
-h1{font-family:'Nunito',system-ui,sans-serif;font-weight:800;font-size:1.7rem;margin:0 0 6px;text-align:center}
-.hint{font-weight:800;color:var(--soft);margin:0 0 28px;text-align:center;transition:opacity .4s}
-.scene{position:relative;width:320px;height:210px;margin-top:300px;perspective:900px;cursor:pointer;
-  -webkit-tap-highlight-color:transparent;animation:bob 3s ease-in-out infinite}
-.scene.open{animation:none;cursor:default}
-@keyframes bob{50%{transform:translateY(-6px)}}
-.back,.pocket,.flap,.card{position:absolute}
-.back{inset:0;background:var(--env);border-radius:10px;z-index:1;box-shadow:0 14px 30px rgba(176,33,90,.25)}
-.pocket{inset:0;background:var(--env-front);z-index:3;border-radius:10px;
-  clip-path:polygon(0 0,50% 56%,100% 0,100% 100%,0 100%)}
-.flap{left:0;top:0;width:100%;height:112px;background:var(--flap);z-index:4;
-  clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top center;
-  transition:transform .6s ease, z-index 0s .3s}
-.seal{position:absolute;left:50%;top:52px;transform:translateX(-50%);font-size:1.7rem;z-index:5;transition:opacity .3s}
+.bokeh{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.bokeh i{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.75),rgba(255,255,255,0) 70%);
+  animation:drift linear infinite;opacity:.55}
+@keyframes drift{from{transform:translateY(0)}to{transform:translateY(-120vh)}}
+.fit{position:absolute;left:50%;top:max(14px,env(safe-area-inset-top,0px));width:340px;
+  transform:translateX(-50%) scale(var(--s,1));transform-origin:top center;text-align:center}
+h1{font-weight:800;font-size:1.75rem;line-height:1.2;margin:0;letter-spacing:.2px;
+  text-shadow:0 2px 0 rgba(255,255,255,.55),0 8px 24px rgba(255,120,170,.35)}
+.scene{position:relative;width:320px;height:210px;margin:362px auto 0;perspective:1100px;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;outline:none}
+.scene .tilt{position:absolute;inset:0;transform-style:preserve-3d;animation:bob 3.4s ease-in-out infinite}
+.scene.open .tilt{animation:none}
+@keyframes bob{50%{transform:translateY(-7px) rotate(-.6deg)}}
+.shadow{position:absolute;left:8%;right:8%;bottom:-26px;height:26px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(163,34,79,.35),transparent 70%);filter:blur(4px)}
+.glow{position:absolute;left:50%;top:-330px;width:460px;height:460px;margin-left:-230px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,190,220,.55) 40%,transparent 70%);
+  opacity:0;transition:opacity 1.2s ease .9s;pointer-events:none}
+.open .glow{opacity:1}
+.back{position:absolute;inset:0;border-radius:10px;z-index:1;
+  background:
+    radial-gradient(circle at 25% 30%,rgba(255,255,255,.55) 2px,transparent 3px) 0 0/22px 22px,
+    linear-gradient(180deg,var(--liner-a),var(--liner-b));
+  box-shadow:0 18px 34px rgba(163,34,79,.28)}
+.pocket{position:absolute;inset:0;z-index:3;border-radius:10px;overflow:hidden}
+.pocket svg{display:block;width:100%;height:100%}
+.flap{position:absolute;left:0;top:0;width:100%;height:124px;z-index:4;transform-origin:top center;
+  transform-style:preserve-3d;transition:transform .8s cubic-bezier(.5,0,.2,1) .15s,z-index 0s .55s}
+.flap>div{position:absolute;inset:0;clip-path:polygon(0 0,100% 0,50% 100%);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flap .out{background:linear-gradient(180deg,#ffb5d1,#ff8db6)}
+.flap .in{transform:rotateX(180deg);
+  background:radial-gradient(circle at 30% 40%,rgba(255,255,255,.55) 2px,transparent 3px) 0 0/22px 22px,linear-gradient(180deg,var(--liner-b),var(--liner-a))}
 .open .flap{transform:rotateX(180deg);z-index:1}
-.open .seal{opacity:0}
-.card{left:35px;bottom:10px;width:250px;height:300px;background:var(--card);border-radius:16px;z-index:2;
-  padding:18px 16px;text-align:center;box-shadow:0 6px 18px rgba(176,33,90,.2);
-  border:3px dashed #ffb3cf;transform-origin:bottom center;transform:translateY(0) scale(.6);
-  transition:transform 1.2s cubic-bezier(.2,.9,.3,1.1) .6s}
-.open .card{transform:translateY(-175px) scale(1)}
-.card h2{font-family:'Marck Script','Segoe Script',cursive;font-weight:400;font-size:1.7rem;margin:0 0 2px}
-.card p{margin:0 0 10px;font-size:.85rem;color:var(--soft);font-weight:800}
-#qr{display:inline-block;padding:10px;background:#fff;border-radius:12px;line-height:0;box-shadow:0 0 0 2px #ffd0e3}
-#qr img,#qr canvas{max-width:100%}
-.fallback{font-size:.8rem;line-height:1.3;padding:20px}
-.heart{position:fixed;bottom:-30px;pointer-events:none;animation:rise 4s ease-in forwards;z-index:10}
-@keyframes rise{to{transform:translateY(-110vh) rotate(30deg);opacity:0}}
-@media (max-width:360px){.scene{transform:scale(.88)}}
+.seal{position:absolute;left:50%;top:116px;width:58px;height:58px;margin:-29px 0 0 -29px;z-index:6;
+  filter:drop-shadow(0 4px 6px rgba(120,10,50,.4));transition:transform .45s ease,opacity .45s ease}
+.open .seal{transform:scale(1.5) rotate(18deg);opacity:0}
+.card{position:absolute;left:30px;bottom:10px;width:260px;height:330px;z-index:2;border-radius:18px;
+  background:linear-gradient(170deg,var(--card-a),var(--card-b));padding:22px 18px 16px;
+  box-shadow:0 10px 30px rgba(163,34,79,.28);transform-origin:bottom center;transform:translateY(0) scale(.58);color:var(--ink)}
+.card::before{content:"";position:absolute;inset:8px;border-radius:12px;border:1.5px solid var(--line);pointer-events:none}
+.card::after{content:"";position:absolute;inset:12px;border-radius:9px;border:1px dashed rgba(244,168,198,.8);pointer-events:none}
+.open .card{animation:out 1.9s cubic-bezier(.3,.8,.3,1) .6s forwards,float 5s ease-in-out 2.6s infinite}
+@keyframes out{0%{transform:translateY(0) scale(.58)}40%{transform:translateY(-70px) scale(.6)}100%{transform:translateY(-200px) scale(1)}}
+@keyframes float{0%,100%{transform:translateY(-200px) scale(1) rotate(0)}50%{transform:translateY(-209px) scale(1) rotate(.7deg)}}
+.eyebrow{font-size:.7rem;font-weight:800;letter-spacing:.28em;text-transform:uppercase;color:var(--soft);margin:2px 0 4px}
+.name{font-size:2.15rem;font-weight:800;line-height:1.1;margin:0;
+  background:linear-gradient(90deg,#d6246e,#ff6fa5,#d6246e);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-weight:700;font-size:.95rem;margin:2px 0 12px}
+.qrwrap{position:relative;display:inline-block;padding:11px;background:#fff;border-radius:14px;
+  box-shadow:0 0 0 1.5px #ffd0e3,0 6px 14px rgba(214,36,110,.15)}
+.qrwrap b{position:absolute;width:16px;height:16px;border:3px solid #ff6fa5}
+.qrwrap b:nth-child(1){left:-5px;top:-5px;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
+.qrwrap b:nth-child(2){right:-5px;top:-5px;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+.qrwrap b:nth-child(3){left:-5px;bottom:-5px;border-right:0;border-top:0;border-radius:0 0 0 8px}
+.qrwrap b:nth-child(4){right:-5px;bottom:-5px;border-left:0;border-top:0;border-radius:0 0 8px 0}
+#qr{line-height:0}#qr img{display:block}#qr canvas{display:none}
+.cap{font-size:.78rem;font-weight:700;color:var(--soft);margin:12px 0 0}
+.hint{position:absolute;left:0;right:0;top:238px;font-weight:800;color:var(--soft);transition:opacity .4s;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.fx{position:fixed;left:0;top:0;pointer-events:none;z-index:20;will-change:transform,opacity}
+@media (prefers-reduced-motion:reduce){.bokeh i,.tilt,.hint,.open .card{animation-duration:0s!important}}
 </style>
 </head>
 <body>
+<div class="bokeh" id="bokeh"></div>
+
+<div class="fit" id="fit">
   <h1>София, с днём рождения!!! 💗</h1>
-  <p class="hint" id="hint">Нажми на конверт ✨</p>
 
   <div class="scene" id="scene" role="button" tabindex="0" aria-label="Открыть конверт">
-    <div class="back"></div>
-    <div class="card">
-      <h2>Для тебя, София 🎀</h2>
-      <p>Наведи камеру на код 🎀</p>
-      <div id="qr"></div>
+    <div class="glow"></div>
+    <div class="shadow"></div>
+    <div class="tilt">
+      <div class="back"></div>
+
+      <div class="card">
+        <div class="eyebrow">для тебя</div>
+        <div class="name">София</div>
+        <div class="sub">с днём рождения! 🎀</div>
+        <div class="qrwrap"><b></b><b></b><b></b><b></b><div id="qr"></div></div>
+        <div class="cap">Наведи камеру на код 💌</div>
+      </div>
+
+      <div class="pocket">
+        <svg viewBox="0 0 320 210" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffc2d9"/><stop offset="1" stop-color="#ff9ec3"/></linearGradient>
+            <linearGradient id="gr" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffbad4"/><stop offset="1" stop-color="#ff95bd"/></linearGradient>
+            <linearGradient id="gb" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff86b3"/><stop offset="1" stop-color="#ffb0cf"/></linearGradient>
+          </defs>
+          <path d="M0 0 L160 124 L0 210Z" fill="url(#gl)"/>
+          <path d="M320 0 L160 124 L320 210Z" fill="url(#gr)"/>
+          <path d="M0 210 L160 112 L320 210Z" fill="url(#gb)"/>
+          <path d="M0 210 L160 112 L320 210" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/>
+          <path d="M0 0 L160 124 M320 0 L160 124" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <div class="flap"><div class="out"></div><div class="in"></div></div>
+
+      <svg class="seal" viewBox="0 0 60 60" aria-hidden="true">
+        <defs><radialGradient id="wax" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ff7aa8"/><stop offset=".6" stop-color="#d81b60"/><stop offset="1" stop-color="#a0124a"/></radialGradient></defs>
+        <path d="M30 2c5 0 7 4 11 4 5 0 8 4 8 9 0 4 5 6 5 11s-5 7-5 11c0 5-3 9-8 9-4 0-6 4-11 4s-7-4-11-4c-5 0-8-4-8-9 0-4-5-6-5-11s5-7 5-11c0-5 3-9 8-9 4 0 6-4 11-4z" fill="url(#wax)"/>
+        <path d="M30 43C16 33 15 24 20.5 20.5c4-2.5 7.500 0 9.500 3 2-3 5.500-5.500 9.500-3C45 24 44 33 30 43z" fill="#ffd3e4" opacity=".92"/>
+        <ellipse cx="22" cy="14" rx="8" ry="3.500" fill="#fff" opacity=".35" transform="rotate(-25 22 14)"/>
+      </svg>
     </div>
-    <div class="pocket"></div>
-    <div class="flap"></div>
-    <div class="seal">💌</div>
+    <div class="hint" id="hint">Нажми на конверт ✨</div>
   </div>
+</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script>
-    // ВСТАВЬ СЮДА ССЫЛКУ НА СЕРТИФИКАТ
-    const CERT_URL = "https://example.com/certificate";
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  // ВСТАВЬ СЮДА ССЫЛКУ НА СЕРТИФИКАТ
+  const CERT_URL = "https://example.com/certificate";
 
-    const qrBox = document.getElementById('qr');
-    try {
-      new QRCode(qrBox, {text: CERT_URL, width: 170, height: 170,
-        colorDark: "#c2185b", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H});
-    } catch (e) {
-      qrBox.innerHTML = '<div class="fallback">QR не загрузился 🙈</div>';
-    }
+  // QR
+  try {
+    new QRCode(document.getElementById('qr'), {text: CERT_URL, width: 150, height: 150,
+      colorDark: "#c2185b", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H});
+  } catch (e) {
+    document.getElementById('qr').innerHTML = '<div style="width:150px;height:150px;display:grid;place-items:center;font-size:.8rem;color:#c2185b">QR не загрузился 🙈</div>';
+  }
 
-    const scene = document.getElementById('scene');
-    function openEnvelope(){
-      if (scene.classList.contains('open')) return;
-      scene.classList.add('open');
-      document.getElementById('hint').style.opacity = 0;
-      setTimeout(hearts, 500);
+  // Подгонка под экран
+  const fit = document.getElementById('fit');
+  function resize(){
+    const s = Math.min(1, (innerHeight - 20) / 720, (innerWidth - 16) / 340);
+    fit.style.setProperty('--s', Math.max(s, .5));
+  }
+  resize(); addEventListener('resize', resize);
+
+  // Фон: мягкие блики
+  const bk = document.getElementById('bokeh');
+  for (let i = 0; i < 16; i++){
+    const e = document.createElement('i'), d = 30 + Math.random() * 90;
+    e.style.cssText = `width:${d}px;height:${d}px;left:${Math.random()*100}%;top:${100 + Math.random()*40}vh;` +
+      `animation-duration:${18 + Math.random()*22}s;animation-delay:${-Math.random()*30}s;opacity:${.25 + Math.random()*.4}`;
+    bk.appendChild(e);
+  }
+
+  // Открытие
+  const scene = document.getElementById('scene');
+  function openEnvelope(){
+    if (scene.classList.contains('open')) return;
+    scene.classList.add('open');
+    document.getElementById('hint').style.opacity = 0;
+    setTimeout(burst, 650);
+    setTimeout(burst, 1700);
+  }
+  function burst(){
+    const r = scene.getBoundingClientRect(), set = ['💗','💖','🌸','✨','🎀','💕','🌷'];
+    for (let i = 0; i < 26; i++){
+      const el = document.createElement('div');
+      el.className = 'fx'; el.textContent = set[i % set.length];
+      el.style.fontSize = (14 + Math.random()*20) + 'px';
+      el.style.left = (r.left + r.width/2) + 'px'; el.style.top = (r.top + 40) + 'px';
+      document.body.appendChild(el);
+      const dx = (Math.random() - .5) * 460, dy = -(160 + Math.random() * 380), rot = (Math.random() - .5) * 360;
+      el.animate([
+        {transform:'translate(0,0) scale(.4) rotate(0)', opacity:0},
+        {transform:`translate(${dx*.5}px,${dy*.7}px) scale(1) rotate(${rot*.5}deg)`, opacity:1, offset:.35},
+        {transform:`translate(${dx}px,${dy + 220}px) scale(.8) rotate(${rot}deg)`, opacity:0}
+      ], {duration: 2200 + Math.random()*1400, easing:'cubic-bezier(.2,.7,.3,1)', delay: Math.random()*250, fill:'forwards'})
+        .onfinish = () => el.remove();
     }
-    function hearts(){
-      const set = ['💗','💖','🌸','✨','🎀','💕'];
-      for (let i = 0; i < 24; i++){
-        const h = document.createElement('div');
-        h.className = 'heart';
-        h.textContent = set[i % set.length];
-        h.style.left = Math.random()*100 + 'vw';
-        h.style.fontSize = (16 + Math.random()*22) + 'px';
-        h.style.animationDelay = (Math.random()*1.5) + 's';
-        document.body.appendChild(h);
-        setTimeout(() => h.remove(), 6000);
-      }
-    }
-    scene.addEventListener('click', openEnvelope);
-    scene.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openEnvelope(); });
-  </script>
+  }
+  scene.addEventListener('click', openEnvelope);
+  scene.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEnvelope(); } });
+</script>
 </body>
 </html>
