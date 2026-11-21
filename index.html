@@ -413,25 +413,34 @@ const cb=document.getElementById("cam");cb.onclick=()=>{follow=!follow;cb.setAtt
 rng.addEventListener("pointerdown",()=>{drag=true;play=false;tw=null;pb.textContent="Поехали"});
 rng.addEventListener("pointerup",()=>drag=false);
 rng.addEventListener("input",()=>{play=false;tw=null;t=+rng.value});
-/* Виниловый проигрыватель с загруженными MP3 */
-(()=>{const sv=document.getElementById("vinyl"),disc=document.getElementById("disc"),arm=document.getElementById("arm"),vb=document.getElementById("vplay"),audio=document.getElementById("djAudio"),select=document.getElementById("trackSelect"),status=document.getElementById("trackStatus");
-const tracks={"track-1.mp3":"Bitch Betta Have My Money","track-2.mp3":"Ray Ban Vision","track-3.mp3":"Pursuit of Happiness (Steve Aoki Remix)"};
-let rot=0,w=0,drag=false,prevA=0,lastMove=0,playing=false,armA=-60,lt=performance.now();const BASE=150;
-function setTrack(){const wasPlaying=!audio.paused;audio.pause();audio.src=select.value;audio.load();playing=false;vb.textContent="Поставить иглу";status.textContent="Выбран трек: "+tracks[select.value];if(wasPlaying) start();}
-async function start(){try{await audio.play();playing=true;vb.textContent="Снять иглу";status.textContent="Играет: "+tracks[select.value];}catch(e){playing=false;vb.textContent="Поставить иглу";status.textContent="Не удалось запустить звук. Нажми ещё раз или проверь громкость вкладки.";}}
-select.addEventListener("change",setTrack);
-vb.addEventListener("click",()=>{if(audio.paused)start();else{audio.pause();playing=false;vb.textContent="Поставить иглу";status.textContent="Пауза: "+tracks[select.value];}});
-audio.addEventListener("ended",()=>{playing=false;vb.textContent="Поставить иглу";status.textContent="Трек закончился: "+tracks[select.value];});
-audio.addEventListener("error",()=>{status.textContent="Не найден аудиофайл. Проверь, что MP3 загружены в GitHub рядом с index.html.";});
-window.djStop=()=>{audio.pause();playing=false;vb.textContent="Поставить иглу";};
-const ang=e=>{const r=sv.getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI};
-sv.addEventListener("pointerdown",e=>{drag=true;prevA=ang(e);lastMove=performance.now();w=0;try{sv.setPointerCapture(e.pointerId)}catch(x){}});
-sv.addEventListener("pointermove",e=>{if(!drag)return;const a=ang(e);let d=a-prevA;if(d>180)d-=360;if(d<-180)d+=360;prevA=a;const n=performance.now(),dt=Math.max(.008,(n-lastMove)/1000);lastMove=n;rot+=d;w=w*.6+(d/dt)*.4});
-const up=()=>{drag=false};sv.addEventListener("pointerup",up);sv.addEventListener("pointercancel",up);
-sv.addEventListener("keydown",e=>{if(e.key==="ArrowRight")w+=260;else if(e.key==="ArrowLeft")w-=260;else return;e.preventDefault()});
-function loop(now){const dt=Math.min(.05,(now-lt)/1000);lt=now;if(drag){if(now-lastMove>70)w*=Math.exp(-dt*14)}else{w+=( (playing?BASE:0)-w)*Math.min(1,dt*(playing?1.6:.7));rot+=w*dt}disc.setAttribute("transform",`rotate(${rot})`);armA+=((playing?0:-60)-armA)*Math.min(1,dt*3);arm.setAttribute("transform",`translate(80 -78) rotate(${armA})`);requestAnimationFrame(loop)}
-setTrack();requestAnimationFrame(loop)})();
-
+/* Виниловый DJ-проигрыватель: автозапуск, тихий уровень и scratch */
+(()=>{
+ const sv=document.getElementById("vinyl"),disc=document.getElementById("disc"),arm=document.getElementById("arm"),vb=document.getElementById("vplay"),audio=document.getElementById("djAudio"),select=document.getElementById("trackSelect"),status=document.getElementById("trackStatus");
+ const tracks={"track-1.mp3":"Bitch Betta Have My Money","track-2.mp3":"Ray Ban Vision","track-3.mp3":"Pursuit of Happiness (Steve Aoki Remix)"};
+ let rot=0,w=0,drag=false,prevA=0,lastMove=0,playing=false,armA=-60,lt=performance.now();
+ const BASE=150,NORMAL_VOLUME=.13;let audioCtx=null,noiseGain=null,noiseFilter=null,noiseSource=null;
+ audio.volume=NORMAL_VOLUME;
+ function setupScratch(){if(audioCtx)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioCtx=new AC();const buffer=audioCtx.createBuffer(1,audioCtx.sampleRate*2,audioCtx.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;noiseSource=audioCtx.createBufferSource();noiseSource.buffer=buffer;noiseSource.loop=true;noiseFilter=audioCtx.createBiquadFilter();noiseFilter.type="lowpass";noiseFilter.frequency.value=1800;noiseGain=audioCtx.createGain();noiseGain.gain.value=0;noiseSource.connect(noiseFilter).connect(noiseGain).connect(audioCtx.destination);noiseSource.start();}
+ function scratchSound(amount,reverse){if(!audioCtx)return;const level=Math.min(.16,Math.abs(amount)/900*.16);noiseGain.gain.setTargetAtTime(reverse?level:level*.35,audioCtx.currentTime,.025);noiseFilter.frequency.setTargetAtTime(reverse?900:2400,audioCtx.currentTime,.03);}
+ function clearScratch(){if(noiseGain&&audioCtx)noiseGain.gain.setTargetAtTime(0,audioCtx.currentTime,.06);}
+ function setTrack(){const wasPlaying=!audio.paused;audio.pause();audio.src=select.value;audio.load();playing=false;audio.playbackRate=1;audio.volume=NORMAL_VOLUME;vb.textContent="Поставить иглу";status.textContent="Выбран трек: "+tracks[select.value];if(wasPlaying)start();}
+ async function start(){try{audio.volume=NORMAL_VOLUME;await audio.play();playing=true;vb.textContent="Снять иглу";status.textContent="Играет тихо: "+tracks[select.value];}catch(e){playing=false;vb.textContent="Поставить иглу";status.textContent="Автозапуск заблокирован браузером — нажми «Поставить иглу».";}}
+ select.addEventListener("change",setTrack);
+ vb.addEventListener("click",()=>{setupScratch();if(audioCtx&&audioCtx.state==="suspended")audioCtx.resume();if(audio.paused)start();else{audio.pause();playing=false;clearScratch();vb.textContent="Поставить иглу";status.textContent="Пауза: "+tracks[select.value];}});
+ audio.addEventListener("ended",()=>{playing=false;clearScratch();vb.textContent="Поставить иглу";status.textContent="Трек закончился: "+tracks[select.value];});
+ audio.addEventListener("error",()=>{status.textContent="Не найден аудиофайл. Проверь, что три MP3 загружены в GitHub рядом с index.html.";});
+ window.djStop=()=>{audio.pause();playing=false;clearScratch();vb.textContent="Поставить иглу";};
+ const ang=e=>{const r=sv.getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI};
+ sv.addEventListener("pointerdown",e=>{setupScratch();if(audioCtx&&audioCtx.state==="suspended")audioCtx.resume();drag=true;prevA=ang(e);lastMove=performance.now();w=0;try{sv.setPointerCapture(e.pointerId)}catch(x){}});
+ sv.addEventListener("pointermove",e=>{if(!drag)return;const a=ang(e);let d=a-prevA;if(d>180)d-=360;if(d<-180)d+=360;prevA=a;const n=performance.now(),dt=Math.max(.008,(n-lastMove)/1000);lastMove=n;rot+=d;w=w*.45+(d/dt)*.55;if(playing){const reverse=w<0,rate=Math.max(.07,Math.min(2.4,Math.abs(w)/BASE));audio.playbackRate=reverse?.07:rate;audio.volume=reverse?NORMAL_VOLUME*.22:NORMAL_VOLUME*Math.min(1.35,Math.max(.25,rate));scratchSound(w,reverse);}});
+ const up=()=>{drag=false;clearScratch();if(playing){audio.playbackRate=1;audio.volume=NORMAL_VOLUME;}};
+ sv.addEventListener("pointerup",up);sv.addEventListener("pointercancel",up);sv.addEventListener("lostpointercapture",up);
+ sv.addEventListener("keydown",e=>{if(e.key==="ArrowRight")w+=260;else if(e.key==="ArrowLeft")w-=260;else return;e.preventDefault();if(playing){audio.playbackRate=w<0?.07:Math.min(2.4,Math.abs(w)/BASE);scratchSound(w,w<0);}});
+ function loop(now){const dt=Math.min(.05,(now-lt)/1000);lt=now;if(drag){if(now-lastMove>70){w*=Math.exp(-dt*14);if(playing){audio.playbackRate=w<0?.07:Math.max(.07,Math.min(2.4,Math.abs(w)/BASE));scratchSound(w,w<0);}}}else{w+=( (playing?BASE:0)-w)*Math.min(1,dt*(playing?1.6:.7));rot+=w*dt;}disc.setAttribute("transform",`rotate(${rot})`);armA+=((playing?0:-60)-armA)*Math.min(1,dt*3);arm.setAttribute("transform",`translate(80 -78) rotate(${armA})`);requestAnimationFrame(loop);}
+ audio.src=select.value;audio.load();requestAnimationFrame(loop);
+ const tryAuto=()=>start();if(document.readyState==="complete")tryAuto();else window.addEventListener("load",tryAuto,{once:true});
+ document.addEventListener("pointerdown",function firstGesture(){if(audio.paused){setupScratch();if(audioCtx&&audioCtx.state==="suspended")audioCtx.resume();start();}document.removeEventListener("pointerdown",firstGesture);},{once:true});
+})();
 /* Общий чат: чтение открыто участникам проекта, отправка только по персональному токену */
 let chatStarted=false;
 function renderChat(rows){
