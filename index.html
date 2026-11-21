@@ -187,7 +187,7 @@ a.pill{font:700 14px "Manrope",sans-serif;color:var(--cr);border:2px solid var(-
 <g id="disc"><circle r="92" fill="#111114"/><circle r="48" fill="none" stroke="#25252a" stroke-width="1"/><circle r="53" fill="none" stroke="#25252a" stroke-width="1"/><circle r="58" fill="none" stroke="#25252a" stroke-width="1"/><circle r="63" fill="none" stroke="#25252a" stroke-width="1"/><circle r="68" fill="none" stroke="#25252a" stroke-width="1"/><circle r="73" fill="none" stroke="#25252a" stroke-width="1"/><circle r="78" fill="none" stroke="#25252a" stroke-width="1"/><circle r="83" fill="none" stroke="#25252a" stroke-width="1"/><circle r="36" fill="#ff7aa5" stroke="#17171a" stroke-width="2"/><text y="-6" text-anchor="middle" font-family="Amatic SC,sans-serif" font-weight="700" font-size="21" fill="#17171a">ПРОЕКТ</text><text y="17" text-anchor="middle" font-family="Amatic SC,sans-serif" font-weight="700" font-size="30" fill="#17171a">Х</text><circle cy="-29" r="3" fill="#f3ead7"/><circle r="4" fill="#0b0b0d"/></g>
 <path d="M-78 -36A86 86 0 0 1 -36 -78" fill="none" stroke="#fff" stroke-opacity=".13" stroke-width="9" stroke-linecap="round"/><path d="M78 36A86 86 0 0 1 36 78" fill="none" stroke="#fff" stroke-opacity=".13" stroke-width="9" stroke-linecap="round"/>
 <g id="arm" transform="translate(80 -78) rotate(-60)"><circle r="9" fill="#3b3b42"/><line x1="0" y1="0" x2="-58" y2="70" stroke="#cfcfd6" stroke-width="4" stroke-linecap="round"/><circle cx="-58" cy="70" r="5" fill="#ff7aa5" stroke="#17171a" stroke-width="1.5"/></g></svg>
-<div><p style="margin:0 0 10px">Крути пластинку курсором или пальцем: быстрее, медленнее, назад. Звук подстраивается под вращение, как у настоящего диджея. Если играет Европа Плюс, Алтана уже на танцполе.</p><div class="ctrl"><button class="pill go" id="vplay">Поставить иглу</button><a class="pill" href="https://www.youtube.com/results?search_query=Kid+Cudi+Pursuit+of+Happiness+Steve+Aoki+Remix" target="_blank" rel="noopener">Оригинал: Pursuit of Happiness</a></div><p class="note">Играет самодельный бит «Проекта Х». Оригинал — по ссылке.</p></div></div></section>
+<div><p style="margin:0 0 10px">Выбирай трек, ставь иглу и крути пластинку курсором или пальцем. Сегодня за пультом — ты.</p><div class="ctrl" style="align-items:center;flex-wrap:wrap"><select class="pill" id="trackSelect" aria-label="Выбрать трек" style="max-width:100%;background:#17171a;color:#f3ead7"><option value="track-1.mp3">Bitch Betta Have My Money</option><option value="track-2.mp3">Ray Ban Vision</option><option value="track-3.mp3">Pursuit of Happiness (Steve Aoki Remix)</option></select><button class="pill go" id="vplay">Поставить иглу</button></div><p class="note" id="trackStatus">Три трека для проекта «Х»</p><audio id="djAudio" preload="metadata"></audio></div></div></section>
 </div>
 
 <div class="legend"><h2>Адреса явок</h2><ol class="lg" id="addr"></ol></div>
@@ -413,29 +413,24 @@ const cb=document.getElementById("cam");cb.onclick=()=>{follow=!follow;cb.setAtt
 rng.addEventListener("pointerdown",()=>{drag=true;play=false;tw=null;pb.textContent="Поехали"});
 rng.addEventListener("pointerup",()=>drag=false);
 rng.addEventListener("input",()=>{play=false;tw=null;t=+rng.value});
-/* пластинка */
-(()=>{const sv=document.getElementById("vinyl"),disc=document.getElementById("disc"),arm=document.getElementById("arm"),vb=document.getElementById("vplay");
-let ctx,master,scrG,scrF,nb,rot=0,w=0,drag=false,prevA=0,lastMove=0,play=false,armA=-60,ph=0,step=0,lt=performance.now();const BASE=150,BASS=[55,0,55,0,65.4,0,55,0,73.4,0,65.4,0,55,0,82.4,0];
-function init(){if(ctx)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;ctx=new C();master=ctx.createGain();master.gain.value=.55;master.connect(ctx.destination);
-nb=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
-const sc=ctx.createBufferSource();sc.buffer=nb;sc.loop=true;scrF=ctx.createBiquadFilter();scrF.type="bandpass";scrF.Q.value=1.2;scrG=ctx.createGain();scrG.gain.value=0;sc.connect(scrF);scrF.connect(scrG);scrG.connect(master);sc.start()}
-const noise=(t,ty,f,du,g)=>{const s=ctx.createBufferSource();s.buffer=nb;const fl=ctx.createBiquadFilter();fl.type=ty;fl.frequency.value=f;const ga=ctx.createGain();ga.gain.setValueAtTime(g,t);ga.gain.exponentialRampToValueAtTime(.001,t+du);s.connect(fl);fl.connect(ga);ga.connect(master);s.start(t);s.stop(t+du+.02)};
-const tone=(t,ty,f,du,g,f2)=>{const o=ctx.createOscillator(),ga=ctx.createGain();o.type=ty;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+du);ga.gain.setValueAtTime(g,t);ga.gain.exponentialRampToValueAtTime(.001,t+du);o.connect(ga);ga.connect(master);o.start(t);o.stop(t+du+.02)};
-function hit(i,p){const t=ctx.currentTime+.01;if(i%4===0)tone(t,"sine",150*p,.16,.9,45*p);if(i%8===4)noise(t,"bandpass",1800*p,.12,.5);if(i%2===1)noise(t,"highpass",7000,.04,.22);if(BASS[i])tone(t,"sawtooth",BASS[i]*p,.2,.22);if(i===0||i===6||i===10){tone(t,"square",220*p,.12,.06);tone(t,"square",261.6*p,.12,.06)}}
+/* Виниловый проигрыватель с загруженными MP3 */
+(()=>{const sv=document.getElementById("vinyl"),disc=document.getElementById("disc"),arm=document.getElementById("arm"),vb=document.getElementById("vplay"),audio=document.getElementById("djAudio"),select=document.getElementById("trackSelect"),status=document.getElementById("trackStatus");
+const tracks={"track-1.mp3":"Bitch Betta Have My Money","track-2.mp3":"Ray Ban Vision","track-3.mp3":"Pursuit of Happiness (Steve Aoki Remix)"};
+let rot=0,w=0,drag=false,prevA=0,lastMove=0,playing=false,armA=-60,lt=performance.now();const BASE=150;
+function setTrack(){const wasPlaying=!audio.paused;audio.pause();audio.src=select.value;audio.load();playing=false;vb.textContent="Поставить иглу";status.textContent="Выбран трек: "+tracks[select.value];if(wasPlaying) start();}
+async function start(){try{await audio.play();playing=true;vb.textContent="Снять иглу";status.textContent="Играет: "+tracks[select.value];}catch(e){playing=false;vb.textContent="Поставить иглу";status.textContent="Не удалось запустить звук. Нажми ещё раз или проверь громкость вкладки.";}}
+select.addEventListener("change",setTrack);
+vb.addEventListener("click",()=>{if(audio.paused)start();else{audio.pause();playing=false;vb.textContent="Поставить иглу";status.textContent="Пауза: "+tracks[select.value];}});
+audio.addEventListener("ended",()=>{playing=false;vb.textContent="Поставить иглу";status.textContent="Трек закончился: "+tracks[select.value];});
+audio.addEventListener("error",()=>{status.textContent="Не найден аудиофайл. Проверь, что MP3 загружены в GitHub рядом с index.html.";});
+window.djStop=()=>{audio.pause();playing=false;vb.textContent="Поставить иглу";};
 const ang=e=>{const r=sv.getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI};
-const wake=()=>{init();if(ctx&&ctx.state==="suspended")ctx.resume()};
-sv.addEventListener("pointerdown",e=>{wake();drag=true;prevA=ang(e);lastMove=performance.now();w=0;try{sv.setPointerCapture(e.pointerId)}catch(x){}});
+sv.addEventListener("pointerdown",e=>{drag=true;prevA=ang(e);lastMove=performance.now();w=0;try{sv.setPointerCapture(e.pointerId)}catch(x){}});
 sv.addEventListener("pointermove",e=>{if(!drag)return;const a=ang(e);let d=a-prevA;if(d>180)d-=360;if(d<-180)d+=360;prevA=a;const n=performance.now(),dt=Math.max(.008,(n-lastMove)/1000);lastMove=n;rot+=d;w=w*.6+(d/dt)*.4});
 const up=()=>{drag=false};sv.addEventListener("pointerup",up);sv.addEventListener("pointercancel",up);
-sv.addEventListener("keydown",e=>{if(e.key==="ArrowRight")w+=260;else if(e.key==="ArrowLeft")w-=260;else return;wake();e.preventDefault()});
-vb.onclick=()=>{wake();play=!play;vb.textContent=play?"Снять иглу":"Поставить иглу"};window.djStop=()=>{play=false;vb.textContent="Поставить иглу"};
-function loop(now){const dt=Math.min(.05,(now-lt)/1000);lt=now;
-if(drag){if(now-lastMove>70)w*=Math.exp(-dt*14)}else{w+=((play?BASE:0)-w)*Math.min(1,dt*(play?1.6:.7));rot+=w*dt}
-disc.setAttribute("transform",`rotate(${rot})`);armA+=((play?0:-60)-armA)*Math.min(1,dt*3);arm.setAttribute("transform",`translate(80 -78) rotate(${armA})`);
-if(ctx){const a=Math.abs(w);scrG.gain.setTargetAtTime(drag&&a>15?Math.min(.3,a/1500):0,ctx.currentTime,.03);scrF.frequency.setTargetAtTime(300+a*4,ctx.currentTime,.03);
-const r=w/BASE;if(play&&Math.abs(r)>.15){ph+=Math.abs(r)*dt*8.53;while(ph>=1){ph-=1;step=(step+(r>0?1:15))%16;hit(step,Math.min(1.8,Math.max(.6,Math.abs(r))))}}}
-requestAnimationFrame(loop)}
-requestAnimationFrame(loop)})();
+sv.addEventListener("keydown",e=>{if(e.key==="ArrowRight")w+=260;else if(e.key==="ArrowLeft")w-=260;else return;e.preventDefault()});
+function loop(now){const dt=Math.min(.05,(now-lt)/1000);lt=now;if(drag){if(now-lastMove>70)w*=Math.exp(-dt*14)}else{w+=( (playing?BASE:0)-w)*Math.min(1,dt*(playing?1.6:.7));rot+=w*dt}disc.setAttribute("transform",`rotate(${rot})`);armA+=((playing?0:-60)-armA)*Math.min(1,dt*3);arm.setAttribute("transform",`translate(80 -78) rotate(${armA})`);requestAnimationFrame(loop)}
+setTrack();requestAnimationFrame(loop)})();
 
 /* Общий чат: чтение открыто участникам проекта, отправка только по персональному токену */
 let chatStarted=false;
