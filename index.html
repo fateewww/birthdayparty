@@ -131,7 +131,14 @@ a.pill{font:700 14px "Manrope",sans-serif;color:var(--cr);border:2px solid var(-
   .where{font-size:11px;max-width:calc(100vw - 72px)}
   .foot{align-items:flex-start;flex-wrap:wrap}
 }
-\n@media (prefers-reduced-motion:reduce){.pick{transition:none}.skb i{animation:none}}
+.picks.wait .pick{pointer-events:none;opacity:.5}
+.pick.locked{pointer-events:none;opacity:.35;filter:grayscale(1)}
+.pick.me .av{box-shadow:0 0 0 4px #f2b632,3px 4px 0 var(--pk)}
+.pick.me{animation:meglow 1.8s ease-in-out infinite}
+@keyframes meglow{50%{transform:scale(1.07) rotate(0)}}
+.ptag{font:700 15px/1 "Caveat",cursive;color:var(--cr)}
+.pick.me .ptag{color:#f2b632;font-size:21px}
+@media (prefers-reduced-motion:reduce){.pick{transition:none}.skb i{animation:none}.pick.me{animation:none}}
 </style>
 </head>
 <body>
@@ -273,7 +280,7 @@ async function connectAttendance(){
   }
   const note=document.getElementById('syncnote');if(note)note.textContent='Статусы обновляются автоматически';
 }
-async function openFromPersonalLink(){
+async function openFromPersonalLinkInner(){
   let token=new URLSearchParams(location.search).get('t')||'';
   try{if(!token)token=sessionStorage.getItem('alkotrip_token')||'';else sessionStorage.setItem('alkotrip_token',token)}catch(e){}
   if(!token)return false;
@@ -290,14 +297,35 @@ async function openFromPersonalLink(){
   me=data.character;
   try{localStorage.setItem('who',me)}catch(e){}
   await refreshGuestStatuses();
-  pickMe(me);
+  applyPersonalLock();
   const sw=document.getElementById('switch2');if(sw)sw.hidden=true;
   return true;
 }
 
+/* персональная ссылка: остаёмся на экране выбора, открыт только свой персонаж */
+function applyPersonalLock(){
+  document.querySelectorAll('#picks .pick').forEach(b=>{
+    const mine=b.dataset.n===me;
+    b.classList.toggle('me',mine);b.classList.toggle('locked',!mine);
+    if(mine){b.removeAttribute('aria-disabled');b.removeAttribute('tabindex');b.setAttribute('aria-label','Это ты: '+me+'. Открыть досье')}
+    else{b.setAttribute('aria-disabled','true');b.setAttribute('tabindex','-1');b.setAttribute('aria-label',b.dataset.n+': персонаж другого гостя, недоступен')}
+    const old=b.querySelector('.ptag');if(old)old.remove();
+    const tag=document.createElement('span');tag.className='ptag';tag.textContent=mine?'это ты, жми':'🔒 не твой';b.appendChild(tag);
+  });
+  const hw=document.querySelector('#intro .hw');if(hw)hw.textContent='Эй, '+me+', это ты?';
+  const lead=document.querySelector('#intro .lead');if(lead)lead.textContent='Мы узнали тебя по персональной ссылке. Нажми на своего персонажа, чтобы открыть досье. Остальные закрыты: у каждого своя ссылка.';
+}
+async function openFromPersonalLink(){
+  let tk=new URLSearchParams(location.search).get('t')||'';
+  try{if(!tk)tk=sessionStorage.getItem('alkotrip_token')||''}catch(e){}
+  const box=document.getElementById('picks');
+  if(tk)box.classList.add('wait');
+  try{return await openFromPersonalLinkInner()}finally{box.classList.remove('wait')}
+}
+
 /* экраны */
 document.getElementById("picks").innerHTML=G.map(([n,c])=>`<button class="pick" data-n="${n}"><span class="pimg">${burst("#ff7aa5")}${avatar(n,c)}</span><span class="pn">${n}</span>${PHOTOS[n]?"":'<span class="soon">фото скоро</span>'}</button>`).join("");
-document.getElementById("picks").onclick=e=>{const b=e.target.closest(".pick");if(b)pickMe(b.dataset.n)};
+document.getElementById("picks").onclick=e=>{const b=e.target.closest(".pick");if(b&&!b.classList.contains("locked"))pickMe(b.dataset.n)};
 let me="",built=false;
 function sw(){if(personalToken){alert("Это твой персональный персонаж — сменить его нельзя.");return}try{localStorage.removeItem("who")}catch(e){}if(!document.getElementById("sheet").hidden)closeSheet();document.getElementById("app").hidden=true;document.getElementById("prof").hidden=true;document.getElementById("intro").hidden=false;djStop();pb.textContent="Поехали";scrollTo(0,0)}
 document.getElementById("switch").onclick=sw;document.getElementById("switch2").onclick=sw;
@@ -310,7 +338,7 @@ document.getElementById("tomap").onclick=async()=>{
   }
   toMap();
 };
-function pickMe(n){me=n;try{localStorage.setItem("who",n)}catch(e){}
+function pickMe(n){if(personalToken&&n!==me)return;me=n;try{localStorage.setItem("who",n)}catch(e){}
 document.getElementById("intro").hidden=true;document.getElementById("app").hidden=true;document.getElementById("prof").hidden=false;document.getElementById("pc").innerHTML=cardHTML(n);scrollTo(0,0)}
 function toMap(){const n=me;document.getElementById("intro").hidden=true;document.getElementById("prof").hidden=true;document.getElementById("app").hidden=false;
 document.getElementById("hi").textContent=`Эй, ${n}!`;
