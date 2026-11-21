@@ -530,8 +530,12 @@ rng.addEventListener("input",()=>{play=false;tw=null;t=+rng.value});
  sv.addEventListener("keydown",e=>{if(e.key==="ArrowRight")w+=260;else if(e.key==="ArrowLeft")w-=260;else return;e.preventDefault();if(playing)audio.playbackRate=w<0?.07:Math.min(2.4,Math.abs(w)/BASE);});
  function loop(now){const dt=Math.min(.05,(now-lt)/1000);lt=now;if(drag){if(now-lastMove>70){w*=Math.exp(-dt*14);if(playing)audio.playbackRate=w<0?.07:Math.max(.07,Math.min(2.4,Math.abs(w)/BASE));}}else{w+=((playing?BASE:0)-w)*Math.min(1,dt*(playing?1.6:.7));rot+=w*dt;}disc.setAttribute("transform",`rotate(${rot})`);armA+=((playing?0:-60)-armA)*Math.min(1,dt*3);arm.setAttribute("transform",`translate(80 -78) rotate(${armA})`);requestAnimationFrame(loop);}
  audio.src=select.value;audio.load();requestAnimationFrame(loop);
- const tryAuto=()=>start();if(document.readyState==="complete")tryAuto();else window.addEventListener("load",tryAuto,{once:true});
- document.addEventListener("pointerdown",function firstGesture(){if(audio.paused)start();document.removeEventListener("pointerdown",firstGesture);},{once:true});
+ function firstGesture(e){
+    ["click","touchend"].forEach(t=>document.removeEventListener(t,firstGesture,true));
+    if(e.target&&e.target.closest&&e.target.closest("#vplay"))return;
+    if(audio.paused&&!playing)start();
+  }
+  ["click","touchend"].forEach(t=>document.addEventListener(t,firstGesture,true));
 })();
 /* Общий чат: чтение открыто участникам проекта, отправка только по персональному токену */
 let chatStarted=false;
