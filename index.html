@@ -444,7 +444,7 @@ rng.addEventListener("input",()=>{play=false;tw=null;t=+rng.value});
 /* Виниловый DJ-проигрыватель: мягкие переходы и Tune FX */
 (()=>{
  const sv=document.getElementById("vinyl"),disc=document.getElementById("disc"),arm=document.getElementById("arm"),vb=document.getElementById("vplay"),audio=document.getElementById("djAudio"),select=document.getElementById("trackSelect"),status=document.getElementById("trackStatus");
- const tracks={"track-1.mp3":"Bitch Betta Have My Money","track-2.mp3":"Ray Ban Vision","track-3.mp3":"Pursuit of Happiness (Steve Aoki Remix)"};
+ const tracks={"track-1.mp3":"Pursuit of Happiness (Steve Aoki Remix)","track-2.mp3":"Ray Ban Vision","track-3.mp3":"Bitch Betta Have My Money"};
  let rot=0,w=0,drag=false,prevA=0,lastMove=0,playing=false,armA=-60,lt=performance.now();
  const BASE=150,NORMAL_VOLUME=.13;
  let audioCtx=null,sourceNode=null,dryGain=null,wetGain=null,delayNode=null,lfo=null,lfoGain=null,fxOn=false,fadeTimer=null;
