@@ -138,7 +138,11 @@ a.pill{font:700 14px "Manrope",sans-serif;color:var(--cr);border:2px solid var(-
 @keyframes meglow{50%{transform:scale(1.07) rotate(0)}}
 .ptag{font:700 15px/1 "Caveat",cursive;color:var(--cr)}
 .pick.me .ptag{color:#f2b632;font-size:21px}
-@media (prefers-reduced-motion:reduce){.pick{transition:none}.skb i{animation:none}.pick.me{animation:none}}
+.gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:42px 20px;text-align:center;overflow:auto;background-color:#17171a;background-image:repeating-conic-gradient(#ff7aa5 0 25%,#17171a 0 50%),repeating-conic-gradient(#ff7aa5 0 25%,#17171a 0 50%);background-size:14px 14px;background-repeat:repeat-x;background-position:top,bottom}
+.gatebox{display:grid;gap:18px;justify-items:center;max-width:520px}.gatebox h1{transform:rotate(-2deg);transform-origin:center}.gatebox p{margin:0}
+button.pill.big{font:700 40px/1 "Amatic SC","Oswald",sans-serif;text-transform:uppercase;padding:14px 52px;animation:gopulse 1.6s ease-in-out infinite}
+@keyframes gopulse{50%{transform:scale(1.06)}}
+@media (prefers-reduced-motion:reduce){.pick{transition:none}.skb i{animation:none}.pick.me{animation:none}button.pill.big{animation:none}}
 </style>
 </head>
 <body>
@@ -148,6 +152,8 @@ a.pill{font:700 14px "Manrope",sans-serif;color:var(--cr);border:2px solid var(-
 <symbol id="ic-shots" viewBox="0 0 48 48"><path d="M8 20h14l-1 18H9z" fill="#ffb400"/><path d="M27 20h14l-1 18H28z" fill="#ff3b6b"/><path d="M7 12h16l-2 27H9zM26 12h16l-2 27H28z" fill="none" stroke="#17171a" stroke-width="2.6" stroke-linejoin="round"/><path d="M11 16l1 8M30 16l1 8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M24 5v4M18 4l1 4M30 4l-1 4" stroke="#17171a" stroke-width="2.4" stroke-linecap="round"/></symbol>
 <symbol id="ic-dance" viewBox="0 0 48 48"><circle cx="35" cy="11" r="7" fill="#ff7aa5" stroke="#17171a" stroke-width="2.2"/><path d="M28 11h14M35 4v14M30 6l10 10M40 6 30 16" stroke="#17171a" stroke-width="1"/><circle cx="17" cy="12" r="4.2" fill="#f3ead7" stroke="#17171a" stroke-width="2.2"/><path d="M17 17v12M17 21 8 13M17 21l9-6M17 29l-7 12M17 29l8 6 2 6" stroke="#17171a" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
 </defs></svg>
+
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-label="Начало"><div class="gatebox"><div class="hw">Проект «Х»</div><h1>Алкотрип</h1><p>5 декабря, с 18:00 и до тех пор, пока не выгонят. Включи звук: у нас тут музыка.</p><button class="pill go big" id="gogo">Погнали</button><button class="pill" id="nomusic">Без музыки</button></div></div>
 
 <main class="poster" id="intro">
 <h1>Алкотрип<small>проект «Х»: питерская версия</small></h1>
@@ -517,7 +523,7 @@ rng.addEventListener("input",()=>{play=false;tw=null;t=+rng.value});
  });
  audio.addEventListener("ended",()=>{playing=false;audio.volume=NORMAL_VOLUME;vb.textContent="Поставить иглу";status.textContent="Трек закончился: "+tracks[select.value];});
  audio.addEventListener("error",()=>{status.textContent="Не найден аудиофайл. Проверь, что три MP3 загружены в GitHub рядом с index.html.";});
- window.djStop=()=>{audio.pause();playing=false;audio.volume=NORMAL_VOLUME;vb.textContent="Поставить иглу";};
+ window.djStart=start;window.djStop=()=>{audio.pause();playing=false;audio.volume=NORMAL_VOLUME;vb.textContent="Поставить иглу";};
  const ang=e=>{const r=sv.getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI};
  sv.addEventListener("pointerdown",e=>{drag=true;prevA=ang(e);lastMove=performance.now();w=0;try{sv.setPointerCapture(e.pointerId)}catch(x){}});
  sv.addEventListener("pointermove",e=>{
@@ -530,12 +536,7 @@ rng.addEventListener("input",()=>{play=false;tw=null;t=+rng.value});
  sv.addEventListener("keydown",e=>{if(e.key==="ArrowRight")w+=260;else if(e.key==="ArrowLeft")w-=260;else return;e.preventDefault();if(playing)audio.playbackRate=w<0?.07:Math.min(2.4,Math.abs(w)/BASE);});
  function loop(now){const dt=Math.min(.05,(now-lt)/1000);lt=now;if(drag){if(now-lastMove>70){w*=Math.exp(-dt*14);if(playing)audio.playbackRate=w<0?.07:Math.max(.07,Math.min(2.4,Math.abs(w)/BASE));}}else{w+=((playing?BASE:0)-w)*Math.min(1,dt*(playing?1.6:.7));rot+=w*dt;}disc.setAttribute("transform",`rotate(${rot})`);armA+=((playing?0:-60)-armA)*Math.min(1,dt*3);arm.setAttribute("transform",`translate(80 -78) rotate(${armA})`);requestAnimationFrame(loop);}
  audio.src=select.value;audio.load();requestAnimationFrame(loop);
- function firstGesture(e){
-    ["click","touchend"].forEach(t=>document.removeEventListener(t,firstGesture,true));
-    if(e.target&&e.target.closest&&e.target.closest("#vplay"))return;
-    if(audio.paused&&!playing)start();
-  }
-  ["click","touchend"].forEach(t=>document.addEventListener(t,firstGesture,true));
+ 
 })();
 /* Общий чат: чтение открыто участникам проекта, отправка только по персональному токену */
 let chatStarted=false;
@@ -576,6 +577,10 @@ document.getElementById('chatform').addEventListener('submit',async e=>{
   input.value='';document.getElementById('chatstate').textContent='Сообщение отправлено';await refreshChat();
 });
 
+(function(){const g=document.getElementById("gate");document.body.style.overflow="hidden";
+const close=()=>{g.hidden=true;document.body.style.overflow=""};
+document.getElementById("gogo").onclick=()=>{try{if(window.djStart)window.djStart()}catch(e){}close()};
+document.getElementById("nomusic").onclick=close})();
 requestAnimationFrame(frame);
 connectAttendance();openFromPersonalLink().then(ok=>{if(!ok&&!new URLSearchParams(location.search).get("t")){personalToken="";}});
 </script>
